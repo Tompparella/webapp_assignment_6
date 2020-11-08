@@ -1,0 +1,79 @@
+/* 5x5 TicTacToe Game - Tommi Kunnari - 0543382 - 8.11.2020 */
+/* 
+Primary color: #ffccdd
+Secondary color: #66ffcc
+*/
+
+body {
+  font-family: Arial, Verdana;
+  background: #ffccdd;
+}
+footer {
+  text-align: center;
+  color: white;
+}
+h1 {
+  color: #ffffff;
+  text-align: center;
+  font-size: 40px;
+  margin-bottom: 0;
+}
+h2 {
+  color: #ffffff;
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 0;
+}
+td {
+  color: #00cccc;
+  border: solid 3px #ffffff;
+  border-radius: 10%;
+}
+#app {
+  align-content: center;
+  width: 350px;
+  height: 450px;
+  overflow: auto;
+  margin: 100px auto;
+  background: #66ffcc;
+  border-radius: 5%;
+  border: solid 3px #ffffff;
+}
+.board {
+  margin-left: 35px;
+  display: grid;
+  grid-row-gap: 5px;
+  grid-column-gap: 5px;
+  grid-template-columns: repeat(5 1fr);
+}
+
+.board .box {
+  width: 45px;
+  height: 45px;
+  font-size: 30px;
+  text-align: center;
+  background: #99ffff;
+}
+.board .box:hover {
+  background: whitesmoke;
+  cursor: pointer;
+}
+
+#reset {
+  margin-top: 5px;
+  font-size: 20px;
+  color: #00cccc;
+  border: 0;
+  background: #ffffff;
+  border-radius: 10%;
+  width: 50%;
+  padding: 15px;
+  border-radius: 5px;
+  align-self: center;
+  outline: none;
+}
+#reset:hover {
+  cursor: pointer;
+  background: #99ffff;
+  border: 5px #ffffff;
+}
