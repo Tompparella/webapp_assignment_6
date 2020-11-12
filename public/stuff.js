@@ -11,7 +11,7 @@ document.getElementById("reset").addEventListener("click", reset_game);
 var turn = 1;
 
 function find_table(){
-  fetch("games/find", {
+  fetch("/find", {
     method: "GET"
   }).then((response) => {
     response.json().then((data) => {
@@ -21,6 +21,10 @@ function find_table(){
 }
 
 function create_table() {
+  while (board.firstChild) {
+    board.removeChild(board.firstChild);
+  }
+  turn = 1;
   table = new Array(5);
 
   for (var i = 0; i < table.length; i++) {
@@ -43,7 +47,7 @@ function create_table() {
       gameboard: table,
       turns: turn
     };
-    fetch("/games/create", {
+    fetch("/create", {
       method: "POST",
       redirect: "follow",
       headers: {
@@ -85,14 +89,16 @@ function mark_box(id) {
   }
 }
 function reset_game() {
+  create_table();
   playerTurn.textContent = "Turn: Player 1";
+  /*
   var table_length = table[0].length;
   for (var i = 0; i < table_length; i++) {
     for (var j = 0; j < table_length; j++) {
       table[i][j] = h;
     }
   }
-  turn = 1;
+  */
   gameOver = false;
   for (i = 0; i < boxes.length; i++) {
     boxes[i].innerHTML = " ";

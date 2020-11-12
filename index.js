@@ -20,7 +20,7 @@ var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
 
 // For local dev
 var mongoURL =
-  "mongodb+srv://Tomppa:TomppaJulma6891!@cluster0.qz7kb.mongodb.net/assignment5?retryWrites=true&w=majority";
+  "mongodb+srv://Tomppa:Julma6891!@cluster0.qz7kb.mongodb.net/assignment5?retryWrites=true&w=majority";
 
 if (mongoURL == null) {
   var mongoHost, mongoPort, mongoDatabase, mongoPassword, mongoUser;
