@@ -11,34 +11,42 @@ document.getElementById("reset").addEventListener("click", reset_game);
 var turn = 1;
 
 function find_table(){
+
   fetch("/games/find", {
     method: "GET"
   }).then((response) => {
-    if (response.data != null) {
-      response.json().then((data) => {
-        console.log(data);
-        table=data.gameboard;
-        console.log(table);
-        turn=data.turns;
-        console.log(turn);
-    });
-  }
-  });
+    response.json().then((data) => {
 
-  var count = 0;
-  for (i = 0; i < 5; i++) {
-    var newrow = board.insertRow(i);
-    newrow.id = i;
-    for (var j = 0; j < 5; j++) {
-      //table[i][j] = h;
-      var newbox = newrow.insertCell(j);
-      newbox.innerHTML = table[i][j];
-      newbox.id = count;
-      newbox.setAttribute("class", "box");
-      count++;
-    }
-    set_click_listeners();
-  }
+      console.log(data);
+  
+      if (data == null) {
+        create_table();
+        return;
+      }
+      table = data.gameboard;
+      turn = data.turns;
+      console.log("Tässä 2" + table);
+      var count = 0;
+      for (i = 0; i < 5; i++) {
+        var newrow = board.insertRow(i);
+        newrow.id = i;
+        for (var j = 0; j < 5; j++) {
+          //table[i][j] = h;
+          var newbox = newrow.insertCell(j);
+          //if (table != undefined) {
+          newbox.innerHTML = table[i][j];
+          //} else { 
+          //  newbox.innerHTML = h;
+          //}
+          newbox.id = count;
+          newbox.setAttribute("class", "box");
+          count++;
+        }
+        set_click_listeners();
+      }
+
+    });
+  });
 }
 
 function create_table() {
@@ -76,7 +84,7 @@ function create_table() {
     method: "POST",
     redirect: "follow",
     headers: {
-      "Content-type": "application.json"
+      "Content-type": "application/json"
     },
     body: JSON.stringify(post)
   }).then((response) => {
@@ -118,10 +126,10 @@ function delete_game() {
     turns: turn
   };
   fetch("/games/delete", {
-    method: "PATCH",
+    method: "POST",
     redirect: "follow",
     headers: {
-      "Content-type": "application.json"
+      "Content-type": "application/json"
     },
     body: JSON.stringify(post)
   }).then((response) => {
@@ -216,10 +224,12 @@ function check_win(box) {
     }
     alert("Player " + p_no + " won!");
     gameOver = true;
+    delete_game();
     return;
   }
   if (turn === 26) {
     alert("The board is full, it's a tie!");
+    delete_game();
     gameOver = true;
   }
 
@@ -228,10 +238,10 @@ function check_win(box) {
     turns: turn
   };
   fetch("/games/update", {
-    method: "PATCH",
+    method: "POST",
     redirect: "follow",
     headers: {
-      "Content-type": "application.json"
+      "Content-type": "application/json"
     },
     body: JSON.stringify(post)
   }).then((response) => {

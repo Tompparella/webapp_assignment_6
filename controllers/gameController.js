@@ -6,7 +6,7 @@ const { ObjectID, ObjectId } = require("mongodb");
 
 
 exports.index = function (req, res, next) {
-  Game.findOne({}).exec(function (err, game) {
+  Game.findOne({gameId: 1}).exec(function (err, game) {
     if (err) {
       return next(err);
     }
@@ -16,7 +16,7 @@ exports.index = function (req, res, next) {
 
 exports.create = function (req, res, next) {
   sanitizeBody('*').trim().escape();
-  var game = new Game({ gameboard: req.body.gameboard, turns: req.body.turns });
+  var game = new Game({ gameboard: req.body.gameboard, turns: req.body.turns, gameId: 1 });
   console.log(req.body);
   game.save(function (err) {
     if (err) {
@@ -27,22 +27,18 @@ exports.create = function (req, res, next) {
 };
 
 exports.update = function (req, res, next) {
-  var game = new Game({ gameboard: req.body.gameboard, turns: req.body.turns });
-  var id = ObjectId(req.body.id);
-
-  Game.updateOne({"_id": id}, {$set: game}, function (err) {
+  Game.updateOne({gameId: 1}, {gameboard: req.body.gameboard, turns: req.body.turns}, function (err) {
     if (err) {
       return next(err);
     }
     console.log("Item updated");
-    res.redirect("/");
+    res.end();
   });
 };
 
 exports.delete = function (req, res, next) {
-  var id = ObjectId(req.body.id);
 
-  Game.deleteOne({"_id": id}, function (err) {
+  Game.deleteOne({gameId: 1}, function (err) {
     if (err) {
       return next(err);
     }
@@ -52,7 +48,7 @@ exports.delete = function (req, res, next) {
 };
 
 exports.find = function (req, res, next) {
-  Game.findOne({}).exec(function (err, game) {
+  Game.findOne({gameId: 1}).exec(function (err, game) {
     if (err) {
       return next(err);
     }
