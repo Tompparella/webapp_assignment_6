@@ -6,5 +6,7 @@ router.get("/", game_controller.index);
 
 router.post("/create", game_controller.create);
 router.get("/find", game_controller.find);
+router.post("/update", game_controller.update);
+router.post("/delete", game_controller.delete);
 
 module.exports = router;

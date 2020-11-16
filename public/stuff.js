@@ -11,13 +11,34 @@ document.getElementById("reset").addEventListener("click", reset_game);
 var turn = 1;
 
 function find_table(){
-  fetch("/find", {
+  fetch("/games/find", {
     method: "GET"
   }).then((response) => {
-    response.json().then((data) => {
-      console.log(data);
+    if (response.data != null) {
+      response.json().then((data) => {
+        console.log(data);
+        table=data.gameboard;
+        console.log(table);
+        turn=data.turns;
+        console.log(turn);
     });
+  }
   });
+
+  var count = 0;
+  for (i = 0; i < 5; i++) {
+    var newrow = board.insertRow(i);
+    newrow.id = i;
+    for (var j = 0; j < 5; j++) {
+      //table[i][j] = h;
+      var newbox = newrow.insertCell(j);
+      newbox.innerHTML = table[i][j];
+      newbox.id = count;
+      newbox.setAttribute("class", "box");
+      count++;
+    }
+    set_click_listeners();
+  }
 }
 
 function create_table() {
@@ -43,24 +64,26 @@ function create_table() {
       newbox.setAttribute("class", "box");
       count++;
     }
-    let to_be_sent = {
-      gameboard: table,
-      turns: turn
-    };
-    fetch("/create", {
-      method: "POST",
-      redirect: "follow",
-      headers: {
-        "Content-type": "application.json"
-      },
-      body: JSON.stringify(to_be_sent)
-    }).then((response) => {
-      if (response.redirected) {
-        window.location.href = response.url;
-      }
-    });
     set_click_listeners();
   }
+  let post = {
+    gameboard: table,
+    turns: turn
+  };
+  console.log(JSON.stringify(post));
+
+  fetch("/games/create", {
+    method: "POST",
+    redirect: "follow",
+    headers: {
+      "Content-type": "application.json"
+    },
+    body: JSON.stringify(post)
+  }).then((response) => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
+  });
 }
 function set_click_listeners() {
   boxes = document.getElementsByClassName("box");
@@ -88,7 +111,28 @@ function mark_box(id) {
     }
   }
 }
+
+function delete_game() {
+  let post = {
+    gameboard: table,
+    turns: turn
+  };
+  fetch("/games/delete", {
+    method: "PATCH",
+    redirect: "follow",
+    headers: {
+      "Content-type": "application.json"
+    },
+    body: JSON.stringify(post)
+  }).then((response) => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
+  });
+}
+
 function reset_game() {
+  delete_game();
   create_table();
   playerTurn.textContent = "Turn: Player 1";
   /*
@@ -138,7 +182,7 @@ function check_win(box) {
     }
   }
 
-  /* Checking siagonal win */
+  /* Checking diagonal win */
   if (row_count === 0) {
     for (i = 0; i < table[curr_row].length; i++) {
       if (table[i][i] === player) {
@@ -178,5 +222,23 @@ function check_win(box) {
     alert("The board is full, it's a tie!");
     gameOver = true;
   }
+
+  let post = {
+    gameboard: table,
+    turns: turn
+  };
+  fetch("/games/update", {
+    method: "PATCH",
+    redirect: "follow",
+    headers: {
+      "Content-type": "application.json"
+    },
+    body: JSON.stringify(post)
+  }).then((response) => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
+  });
+
 }
 find_table();
