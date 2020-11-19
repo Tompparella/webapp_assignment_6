@@ -1,31 +1,36 @@
-
 var board = document.getElementById("board");
 var boxes = document.getElementsByClassName("box");
 var playerTurn = document.getElementById("playerTurn");
 var table;
 var gameOver = false;
 var h = " ";
+var interval;
+var winner;
+var playerMark;
+var currentPlayer;
 
 document.getElementById("reset").addEventListener("click", reset_game);
-
 var turn = 1;
 
 function find_table(){
-
+  console.log(document.cookie.split("=")[1]);
   fetch("/games/find", {
     method: "GET"
   }).then((response) => {
     response.json().then((data) => {
-
-      console.log(data);
   
       if (data == null) {
         create_table();
         return;
       }
+      if (document.cookie.split("=")[1] === data.X) {
+        playerMark = "X";
+      } else {
+        playerMark = "O";
+      }
       table = data.gameboard;
       turn = data.turns;
-      console.log("Tässä 2" + table);
+      currentPlayer = data.playerTurn;
       var count = 0;
       for (i = 0; i < 5; i++) {
         var newrow = board.insertRow(i);
@@ -50,10 +55,12 @@ function find_table(){
 }
 
 function create_table() {
+  playerMark = "X";
   while (board.firstChild) {
     board.removeChild(board.firstChild);
   }
   turn = 1;
+  currentPlayer = 1;
   table = new Array(5);
 
   for (var i = 0; i < table.length; i++) {
@@ -93,6 +100,7 @@ function create_table() {
     }
   });
 }
+
 function set_click_listeners() {
   boxes = document.getElementsByClassName("box");
   for (var i = 0; i < boxes.length; i++) {
@@ -101,26 +109,33 @@ function set_click_listeners() {
     });
   }
 }
+
 function mark_box(id) {
   if (!gameOver) {
-    var curr_row = boxes[id].parentNode.id;
-    var curr_col = id - curr_row * 5;
-    if (boxes[id].textContent.includes(" ")) {
-      if (turn % 2 !== 0) {
-        boxes[id].innerHTML = "X";
-        table[curr_row][curr_col] = "X";
-        playerTurn.textContent = "Turn: Player 2";
+    if((playerMark === "X" && currentPlayer === 1) || (playerMark === "O" && currentPlayer === 2)) {
+      if (currentPlayer === 1) {
+        currentPlayer = 2
       } else {
-        boxes[id].innerHTML = "O";
-        table[curr_row][curr_col] = "O";
-        playerTurn.textContent = "Turn: Player 1";
+        currentPlayer = 1
       }
-      check_win(boxes[id]);
-    }
+      var curr_row = boxes[id].parentNode.id;
+      var curr_col = id - curr_row * 5;
+      if (boxes[id].textContent.includes(" ")) {
+        if (turn % 2 !== 0) {
+          boxes[id].innerHTML = "X";
+          table[curr_row][curr_col] = "X";
+        } else {
+          boxes[id].innerHTML = "O";
+          table[curr_row][curr_col] = "O";
+        }
+        check_win(boxes[id]);
+      }
   }
+}
 }
 
 function delete_game() {
+  playerMark = undefined;
   let post = {
     gameboard: table,
     turns: turn
@@ -142,7 +157,6 @@ function delete_game() {
 function reset_game() {
   delete_game();
   create_table();
-  playerTurn.textContent = "Turn: Player 1";
   /*
   var table_length = table[0].length;
   for (var i = 0; i < table_length; i++) {
@@ -216,26 +230,71 @@ function check_win(box) {
 
   if (row_count === 5) {
     playerTurn.textContent = "Game Over!";
-    var p_no;
     if (player === "X") {
-      p_no = "1";
+      winner = "1";
     } else {
-      p_no = "2";
+      winner = "2";
     }
-    alert("Player " + p_no + " won!");
+
     gameOver = true;
-    delete_game();
-    return;
+
+    let post = {
+      gameboard: table,
+      turns: turn,
+      gameOver: gameOver,
+      winner: winner,
+      playerTurn: currentPlayer,
+      mark: playerMark
+    };
+    fetch("/games/update", {
+      method: "POST",
+      redirect: "follow",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(post)
+    }).then((response) => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
+    });
+
+    alert("Congratulations! You won!");
   }
+
   if (turn === 26) {
-    alert("The board is full, it's a tie!");
-    delete_game();
+
     gameOver = true;
+
+    let post = {
+      gameboard: table,
+      turns: turn,
+      gameOver: gameOver,
+      mark: playerMark
+    };
+    fetch("/games/update", {
+      method: "POST",
+      redirect: "follow",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(post)
+    }).then((response) => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
+    });
+    alert("The board is full, it's a tie!");
+    return;
   }
 
   let post = {
     gameboard: table,
-    turns: turn
+    turns: turn,
+    gameOver: gameOver,
+    winner: winner,
+    mark: playerMark,
+    playerTurn: currentPlayer
   };
   fetch("/games/update", {
     method: "POST",
@@ -249,6 +308,53 @@ function check_win(box) {
       window.location.href = response.url;
     }
   });
-
 }
+
+function updateInterval() {
+  interval = setInterval(function () {
+    if (!gameOver) {
+      fetch("/games/find", {
+        method: "GET"
+      }).then((response) => {
+        response.json().then((data) => {
+
+          gameOver = data.gameOver;
+          table = data.gameboard;
+          turn = data.turns;
+          winner = data.winner;
+          currentPlayer = data.playerTurn;
+
+          if (data.turns < turn) {
+            playerMark = "O";
+          }
+
+          if ((playerMark === "X" && data.playerTurn === 1) || (playerMark === "O" && data.playerTurn === 2)) {
+            playerTurn.textContent = "Your turn!";
+          } else {
+            playerTurn.textContent = "Opponent's turn";
+          }
+
+          board.firstChild.childNodes.forEach(function(currVal, i) {
+            currVal.childNodes.forEach(function(currCol, j) {
+              currCol.innerHTML = table[i][j];
+            });
+          });
+
+          if (gameOver) {
+            playerMark = undefined;
+            playerTurn.textContent = "Game Over!";
+            if (winner != undefined) {
+              alert("Game over. You lost!");
+            } else {
+              alert("Game over. It's a tie!");
+            }
+          }
+      });
+    });
+    }
+  },1000);
+}
+
 find_table();
+
+updateInterval();

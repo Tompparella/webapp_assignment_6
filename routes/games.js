@@ -4,6 +4,7 @@ var game_controller = require("../controllers/gameController");
 
 router.get("/", game_controller.index);
 
+//router.post("/addPlayer", game_controller.create);
 router.post("/create", game_controller.create);
 router.get("/find", game_controller.find);
 router.post("/update", game_controller.update);

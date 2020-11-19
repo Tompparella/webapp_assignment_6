@@ -14,6 +14,8 @@ var mongoose = require("mongoose");
 const app = express();
 const port = 8000;
 
+var players;
+
 // Mongoose connection
 var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
   mongoURLLabel = "";
@@ -72,6 +74,33 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Cookie handler
+app.use(function (req, res, next) {
+  //var mark;
+  var cookie = req.cookies.playerId;
+  if (cookie === undefined) {
+      var randomNumber = Math.random().toString();
+      /*if (players === undefined) {
+        mark = "X";
+        players = "X";
+      } else {
+        if (players === "X") {
+          mark = "O";
+          players = "O";
+        } else {
+          mark = "X";
+          players = "X";
+        }
+      }*/
+      randomNumber = randomNumber.substring(2,randomNumber.length);
+      res.cookie('playerId', randomNumber, { maxAge: 900000});
+      //res.cookie('playerMark', mark, { maxAge: 900000, httpOnly: true});
+      console.log("Cookie created succesfully");
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
@@ -91,11 +120,8 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   console.log(res.locals.error);
 });
-/*
-app.get("/", (req, res) => {
-  res.render("index")
-});
 
+/*
 app.get("/qwe", (req, res) => {
   res.send("qweqweqwee");
 });
