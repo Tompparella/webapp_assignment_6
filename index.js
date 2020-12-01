@@ -21,7 +21,7 @@ var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
   mongoURLLabel = "";
 
 var mongoURL =
-  "mongodb+srv:// !INSERT_PASSWORD_HERE! @cluster0.qz7kb.mongodb.net/assignment5?retryWrites=true&w=majority";
+  "mongodb+srv://Tomppa: !INSERT_PASSWORD_HERE! @cluster0.qz7kb.mongodb.net/assignment5?retryWrites=true&w=majority";
 
   // For local dev
 if (mongoURL == null) {
